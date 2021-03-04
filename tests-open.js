@@ -65,5 +65,9 @@ export default () => {
         return data.filter((d) => d.login === 'instruct-br').length === 0;
       },
     });
+    // Refaz consulta que existe para a org "instruct-br" permaneça salva no banco após o teste de deletar
+    http.get(`${BASE_URL}api/orgs/instruct-br/`, {
+      headers: HEADERS,
+    });
   });
 };

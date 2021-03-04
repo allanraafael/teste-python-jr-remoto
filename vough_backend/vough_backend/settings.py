@@ -9,25 +9,69 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
 from pathlib import Path
+
 import django_heroku
+import environ
+
+env = environ.Env()
+root_path = environ.Path(__file__) - 3
+env.read_env(env_file=root_path(".env"))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "38sg$ey_)-q^8bs(ns&bc%_@%)&x9iha47pv5-p8l1t19f7&8g"
+# SECURITY WARNING: don't run with debug turned on in production!\DEBUG = env('DEBUG')
+DEBUG = env.bool("DEBUG", default=True)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Raises django's ImproperlyConfigured exception if SECRET_KEY not in os.environ
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = env('SECRET_KEY')
+
+GITHUB_API_URL = env("GITHUB_API_URL", default="https://api.github.com")
+
+GITHUB_TOKEN = env("GITHUB_TOKEN")
+
+CACHE_TTL = 60 * 15
 
 ALLOWED_HOSTS = ["*"]
 
+SESSIONS_ENGINE = 'django.contrib.sessions.backends.cache'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+
+SPECTACULAR_SETTINGS = {
+    'DEFAULT_GENERATOR_CLASS': 'drf_spectacular.generators.SchemaGenerator',
+    'TITLE': 'Rank Orgs API',
+    'DESCRIPTION': 'API desenvolvida para auxiliar a Vough na conferência de seus clientes do meio open source.',
+    # Optional: MAY contain "name", "url", "email"
+    'CONTACT': {
+        'name': 'the developer',
+        'email': 'allanrafaelfo@.gmail.com'
+    },
+    'VERSION': '1.0.0',
+    # complete public schema or a subset based on the requesting user
+    'SERVE_PUBLIC': False,
+    # # include schema enpoint into schema
+    'SERVE_INCLUDE_SCHEMA': False,
+    # list of authentication/permission classes for spectacular's views.
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+    # # None will default to DRF's AUTHENTICATION_CLASSES
+    'SERVE_AUTHENTICATION': None,
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
+    }
+}
 
 # Application definition
 
@@ -39,6 +83,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "drf_spectacular",
     "api",
 ]
 
@@ -72,22 +117,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "vough_backend.wsgi.application"
 
+USE_SESSION_AUTH = False
+
 # Django Rest Framework
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
     ],
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+DJANGO_DATABASE_URL = env.db("DATABASE_URL")
+DATABASES = {"default": DJANGO_DATABASE_URL}
 
 
 # Password validation
@@ -112,16 +156,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = env("DJ_LANGUAGE_CODE", default="pt-br")
 
-TIME_ZONE = "UTC"
+TIME_ZONE = env("DJ_TIMEZONE", default="America/Recife")
 
-USE_I18N = True
+USE_I18N = env("DJ_USE_I18N", default=True)
 
-USE_L10N = True
+USE_L10N = env("DJ_USE_L10N", default=True)
 
-USE_TZ = True
-
+USE_TZ = env("DJ_USE_TZ", default=False)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
