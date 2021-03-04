@@ -33,7 +33,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 GITHUB_API_URL = env("GITHUB_API_URL", default="https://api.github.com")
 
-GITHUB_TOKEN = env("GITHUB_TOKEN")
+GITHUB_TOKEN = env("GITHUB_TOKEN", default="9685bfa5d2be685bbb038eea1e64a4879c1038f1")
 
 CACHE_TTL = 60 * 15
 
